@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hỗ Trợ Phát Mã Nguồn (Bản Pro)</title>
+    <!-- Import Font Awesome để dùng icon -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            /* Background hiện đại với dải màu gradient */
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 420px;
+            height: 90vh;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Header phong cách hiện đại */
+        #chat-header {
+            background: linear-gradient(to right, #0084ff, #00c6ff);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .header-avatar {
+            width: 45px;
+            height: 45px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .header-avatar i {
+            color: #0084ff;
+            font-size: 24px;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .header-status {
+            font-size: 12px;
+            color: #e0f0ff;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #00ff00;
+            border-radius: 50%;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        #user-id-display {
+            font-size: 11px;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-top: 2px;
+            display: inline-block;
+        }
+
+        /* Khu vực hiển thị tin nhắn */
+        #chat-messages {
+            flex: 1;
+            padding: 20px 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #f4f7f6;
+            scroll-behavior: smooth;
+        }
+
+        .message-row {
+            display: flex;
+            width: 100%;
+            align-items: flex-end;
+        }
+
+        .message-row.bot {
+            justify-content: flex-start;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .bot-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #0084ff;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 14.5px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: scale(0.8);
+            transform-origin: bottom center;
+        }
+
+        @keyframes popIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .bot .message-bubble {
+            background-color: #ffffff;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .user .message-bubble {
+            background-color: #0084ff;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-bubble a {
+            color: #0084ff;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 5px;
+            background: rgba(0, 132, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .user .message-bubble a {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .message-bubble a:hover {
+            opacity: 0.8;
+        }
+
+        .message-bubble img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: block;
+        }
+
+        /* Hiệu ứng đang gõ chữ */
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            width: fit-content;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #adb5bd;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Khu vực nhập liệu */
+        #chat-input-area {
+            display: flex;
+            padding: 15px;
+            background: #ffffff;
+            border-top: 1px solid #eaeaea;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: #f0f2f5;
+            border-radius: 25px;
+            padding: 2px 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        #user-input {
+            width: 100%;
+            padding: 12px 0;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 15px;
+            color: #333;
+        }
+
+        #send-btn {
+            background: #0084ff;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.2s, background 0.2s;
+            outline: none;
+        }
+
+        #send-btn:hover {
+            background: #0073e6;
+            transform: scale(1.05);
+        }
+
+        #send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        /* Custom scrollbar */
+        #chat-messages::-webkit-scrollbar { width: 5px; }
+        #chat-messages::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- Header -->
+        <div id="chat-header">
+            <div class="header-avatar">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div class="header-info">
+                <div class="header-title">Dev Support Bot</div>
+                <div class="header-status">
+                    <span class="status-dot"></span> Đang hoạt động
+                </div>
+                <div id="user-id-display"></div>
+            </div>
+        </div>
+
+        <!-- Tin nhắn -->
+        <div id="chat-messages">
+            <!-- Khu vực hiệu ứng đang gõ -->
+            <div class="message-row bot" id="typing-row" style="display: none;">
+                <div class="bot-avatar"><i class="fa-solid fa-robot"></i></div>
+                <div class="typing-indicator" id="typing-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div id="chat-input-area">
+            <div class="input-wrapper">
+                <input type="text" id="user-input" placeholder="Nhập tin nhắn..." autocomplete="off" disabled>
+            </div>
+            <button id="send-btn" disabled>
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Các biến cấu hình link
+        const sourceCodeLink = "https://www.image2url.com/r2/default/files/1782893642319-5d154c1e-7f2c-42f0-b3a9-5feca642a473.zip";
+        const donateImgLink = "https://vietqr.app/img?bank=VietinBank&acc=101883740855&template=compact&des=SEVQR+DONATE&showinfo=true&fullacc=true&holder=TRAN%20THI%20NHUNG";
+        const discordLink = "https://discord.com/channels/1521787589428904026/1521787590141808706";
+
+        // DOM elements
+        const messagesContainer = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const typingRow = document.getElementById('typing-row');
+
+        // Tạo User ID ngẫu nhiên
+        const userId = "USER_" + Math.floor(Math.random() * 9000000 + 1000000);
+        userIdDisplay.innerText = `ID: ${userId}`;
+
+        // Cuộn xuống cuối
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Hàm thêm tin nhắn vào giao diện
+        function appendMessage(sender, text, isHtml = false) {
+            const rowDiv = document.createElement('div');
+            rowDiv.classList.add('message-row', sender);
+
+            // Nếu là bot thì thêm icon avatar
+            if (sender === 'bot') {
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = 'bot-avatar';
+                avatarDiv.innerHTML = '<i class="fa-solid fa-robot"></i>';
+                rowDiv.appendChild(avatarDiv);
+            }
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            
+            if (isHtml) bubbleDiv.innerHTML = text;
+            else bubbleDiv.innerText = text;
+
+            rowDiv.appendChild(bubbleDiv);
+            
+            // Chèn tin nhắn trước cái icon "đang gõ..."
+            messagesContainer.insertBefore(rowDiv, typingRow);
+            scrollToBottom();
+        }
+
+        // Hàm tạo độ trễ giả lập bot đang gõ chữ
+        function simulateBotTyping(delay, callback) {
+            typingRow.style.display = 'flex';
+            scrollToBottom();
+            setTimeout(() => {
+                typingRow.style.display = 'none';
+                callback();
+            }, delay);
+        }
+
+        // Kịch bản tự động mở đầu
+        window.onload = () => {
+            // Bước 1: Giả lập người dùng tự nhắn xin file sau 1s
+            setTimeout(() => {
+                appendMessage('user', 'Cho mình xin file mã nguồn với ạ');
+                
+                // Bước 2: Bot gõ chữ trong 1.5s rồi gửi Link
+                simulateBotTyping(1500, () => {
+                    appendMessage('bot', `Chào bạn, đây là file mã nguồn của bạn nhé: <br><a href="${sourceCodeLink}" target="_blank"><i class="fa-solid fa-download"></i> Tải file ZIP</a>`, true);
+                    
+                    // Bước 3: Bot gõ chữ tiếp 2s rồi gửi lời xin donate
+                    simulateBotTyping(2000, () => {
+                        appendMessage('bot', 'Nếu mã nguồn này giúp ích được cho bạn, bạn có thể donate một ly cafe để ủng hộ Dev duy trì các dự án nhé. Cảm ơn bạn rất nhiều! ❤️');
+                        
+                        // Bước 4: Bot gõ chữ 1s rồi ném thẳng ảnh QR ra
+                        simulateBotTyping(1000, () => {
+                            appendMessage('bot', `<img src="${donateImgLink}" alt="QR Donate">`, true);
+                            
+                            // Xong kịch bản -> Mở khóa ô chat
+                            userInput.disabled = false;
+                            sendBtn.disabled = false;
+                            userInput.focus();
+                        });
+                    });
+                });
+            }, 1000);
+        };
+
+        // Hàm xử lý logic chat của người dùng
+        function handleUserMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // In tin nhắn user ra màn hình
+            appendMessage('user', text);
+            userInput.value = '';
+
+            const lowerText = text.toLowerCase();
+            const donateKeywords = ['đã donate', 'đã ck', 'chuyển khoản', 'đã chuyển', 'done', 'xong rồi', 'check', 'rồi'];
+            const isDonated = donateKeywords.some(keyword => lowerText.includes(keyword));
+
+            // Bot trả lời lại (có hiệu ứng gõ chữ)
+            simulateBotTyping(1500, () => {
+                if (isDonated) {
+                    appendMessage('bot', 'Tuyệt vời! Mình đã ghi nhận ủng hộ của bạn. Cảm ơn bạn rất nhiều. Chúc bạn sử dụng mã nguồn hiệu quả và có một ngày làm việc thật năng suất nhé 🥰');
+                } else {
+                    appendMessage('bot', `Dạ, hiện tại mình chỉ là Bot hỗ trợ phát file mã nguồn tự động nên chưa hiểu hết ý bạn.<br><br>Mọi thắc mắc, đóng góp hoặc báo lỗi, bạn vui lòng trao đổi qua kênh chat <b>"ý - kiến - và - phản - hồi"</b> giúp mình nhé:<br><a href="${discordLink}" target="_blank"><i class="fa-brands fa-discord"></i> Kênh Discord Hỗ Trợ</a>`, true);
+                }
+            });
+        }
+
+        // Bắt sự kiện nút Gửi và phím Enter
+        sendBtn.addEventListener('click', handleUserMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleUserMessage();
+        });
+    </script>
+</body>
+</html>
